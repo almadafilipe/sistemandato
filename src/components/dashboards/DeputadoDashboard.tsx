@@ -2,6 +2,7 @@ import { getMunicipios } from "@/lib/supabase/api";
 import LogoutButton from "@/components/LogoutButton";
 import CityGrid from "../deputado/CityGrid";
 import CityDetailView from "../deputado/CityDetailView";
+import PromoteToAdminButton from "../assessoria/PromoteToAdminButton";
 
 interface DeputadoDashboardProps {
   searchParams: {
@@ -32,6 +33,7 @@ export default async function DeputadoDashboard({ searchParams }: DeputadoDashbo
       <div className="text-center text-muted">
         <p>Nenhum município encontrado.</p>
         <p>A assessoria precisa cadastrar os municípios na plataforma.</p>
+        <PromoteToAdminButton />
       </div>
     );
   }

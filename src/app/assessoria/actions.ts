@@ -50,3 +50,40 @@ export async function updateUserProfile(userId: string, targetRole: 'deputado' |
 
   revalidatePath('/'); // Revalida o dashboard principal
 }
+
+export async function createMunicipio(nome: string, regiao?: string, populacao?: number) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('municipios')
+    .insert([{ nome, regiao, populacao }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Erro ao criar município:", error);
+    throw new Error('Falha ao criar município.');
+  }
+
+  revalidatePath('/');
+  return data;
+}
+
+export async function promoteToAssessoria() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Não autenticado");
+
+  const { error } = await supabase
+    .from('perfis')
+    .update({ role: 'assessoria' })
+    .eq('id', user.id);
+
+  if (error) {
+    console.error("Erro ao promover usuário:", error);
+    throw new Error("Falha na promoção de acesso.");
+  }
+
+  revalidatePath('/');
+}

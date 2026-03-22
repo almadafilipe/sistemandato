@@ -2,6 +2,7 @@ import LogoutButton from "@/components/LogoutButton";
 import { getAdminDashboardStats, getPerfis, getMunicipios } from "@/lib/supabase/api";
 import AprovalQueue from "../assessoria/AprovalQueue";
 import UserManagement from "../assessoria/UserManagement";
+import AddMunicipioForm from "../assessoria/AddMunicipioForm";
 
 interface AssessoriaDashboardProps {
   user: any;
@@ -91,6 +92,11 @@ export default async function AssessoriaDashboard({ user }: AssessoriaDashboardP
                   <p className="text-center text-muted text-sm py-4">Nenhum município cadastrado.</p>
                 )}
               </div>
+            </div>
+
+            {/* Novo Município */}
+            <div className="mt-4">
+              <AddMunicipioForm />
             </div>
           </div>
 
