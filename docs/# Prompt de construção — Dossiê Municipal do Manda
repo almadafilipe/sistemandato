@@ -1,0 +1,268 @@
+# Prompt de construção — Dossiê Municipal do Mandato
+
+## Contexto do produto
+
+Construa um web app chamado **Dossiê Municipal do Mandato** para um deputado estadual da Bahia e sua equipe. O sistema centraliza informações políticas e de relacionamento por município, organizadas pela assessoria e pelas lideranças locais, e consumidas pelo deputado via PWA no celular antes e durante visitas às cidades.
+
+Não é um CRM genérico. É um **dossiê político por município**: quem é quem, o que foi feito, o que está pendente, e quem o deputado vai encontrar.
+
+---
+
+## Stack obrigatória
+
+- **Frontend:** Next.js 14 (App Router) com TypeScript
+- **Backend / Banco de dados:** Supabase (PostgreSQL + Auth + Storage)
+- **Estilização:** Tailwind CSS
+- **Hosting:** Vercel (frontend) + Supabase free tier (backend)
+- **PWA:** next-pwa para geração do manifesto e service worker
+- **Sem dependências pagas** — tudo deve funcionar no plano gratuito de cada serviço
+
+---
+
+## Perfis de usuário e permissões
+
+### 1. Deputado
+- Acesso de **leitura total** a todos os municípios
+- Interface otimizada para mobile (PWA instalável)
+- Sem permissão de escrita
+
+### 2. Liderança Local
+- Cadastrada pela assessoria e vinculada a um município específico
+- Só visualiza dados do **seu próprio município**
+- Pode **importar contatos via arquivo .vcf** (seleção manual antes do envio)
+- Contatos enviados ficam com status `pendente` até aprovação da assessoria
+
+### 3. Assessoria (Admin)
+- Acesso total de leitura e escrita
+- Gerencia todos os municípios e todos os módulos de dados
+- Aprova ou rejeita contatos enviados pelas lideranças
+- Gerencia usuários (lideranças) e seus municípios vinculados
+
+---
+
+## Estrutura do banco de dados (Supabase / PostgreSQL)
+
+```sql
+-- Municípios
+municipios (
+  id uuid PK,
+  nome text NOT NULL,
+  regiao text,
+  populacao int,
+  created_at timestamptz
+)
+
+-- Usuários (extensão da auth.users do Supabase)
+perfis (
+  id uuid PK references auth.users,
+  nome text,
+  role text CHECK (role IN ('deputado', 'lideranca', 'assessoria')),
+  municipio_id uuid references municipios -- nulo para deputado e assessoria
+)
+
+-- Contatos
+contatos (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  enviado_por uuid references perfis,
+  nome text NOT NULL,
+  telefone text,
+  email text,
+  tags text[],
+  status text CHECK (status IN ('pendente', 'aprovado', 'rejeitado')),
+  consentiu boolean DEFAULT false,
+  created_at timestamptz
+)
+
+-- Políticos aliados
+politicos (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  cargo text, -- 'prefeito', 'vice', 'vereador'
+  nome text NOT NULL,
+  partido text,
+  telefone text,
+  aliado boolean DEFAULT true
+)
+
+-- Emendas parlamentares
+emendas (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  titulo text NOT NULL,
+  valor numeric,
+  area text, -- 'saúde', 'educação', 'infraestrutura', etc.
+  status text CHECK (status IN ('proposta', 'aprovada', 'empenhada', 'executada', 'bloqueada')),
+  ano int,
+  observacoes text
+)
+
+-- Obras e projetos
+obras (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  titulo text NOT NULL,
+  descricao text,
+  status text CHECK (status IN ('planejada', 'em_andamento', 'concluida', 'paralisada')),
+  emenda_id uuid references emendas,
+  previsao_conclusao date
+)
+
+-- Agenda / eventos
+eventos (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  titulo text NOT NULL,
+  descricao text,
+  data_hora timestamptz,
+  local text,
+  tipo text -- 'visita', 'reunião', 'inauguração', etc.
+)
+
+-- Notas da assessoria
+notas (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  autor_id uuid references perfis,
+  conteudo text NOT NULL,
+  created_at timestamptz
+)
+
+-- Fotos e mídia
+midias (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  url text NOT NULL, -- URL do Supabase Storage
+  legenda text,
+  tipo text CHECK (tipo IN ('foto', 'documento')),
+  created_at timestamptz
+)
+
+-- Pendências políticas (situações em aberto)
+pendencias (
+  id uuid PK,
+  municipio_id uuid references municipios,
+  titulo text NOT NULL,
+  descricao text,
+  tipo text, -- 'demanda', 'conflito', 'compromisso', 'follow-up'
+  prioridade text CHECK (prioridade IN ('baixa', 'media', 'alta', 'urgente')),
+  status text CHECK (status IN ('aberta', 'em_tratativa', 'resolvida')),
+  responsavel_id uuid references perfis,
+  prazo date,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+```
+
+**Row Level Security (RLS) no Supabase:**
+- `lideranca`: SELECT/INSERT apenas em registros onde `municipio_id = perfis.municipio_id`
+- `assessoria`: SELECT/INSERT/UPDATE/DELETE em tudo
+- `deputado`: SELECT em tudo, sem escrita
+
+---
+
+## Módulos de dados por município
+
+Cada município deve ter os seguintes módulos, todos gerenciáveis pela assessoria:
+
+1. **Contatos** — importados via .vcf pelas lideranças, aprovados pela assessoria. Campos: nome, telefone, e-mail, tags, status de consentimento.
+2. **Políticos aliados** — prefeito, vice-prefeito e vereadores aliados com partido e contato.
+3. **Emendas parlamentares** — valor, área, status de execução orçamentária.
+4. **Obras e projetos** — obras em andamento, concluídas ou paralisadas, vinculáveis a emendas.
+5. **Agenda e eventos** — visitas, reuniões e inaugurações com data, horário e local.
+6. **Notas da assessoria** — texto livre, com autor e data, histórico cronológico.
+7. **Fotos e mídia** — upload de imagens e documentos vinculados ao município.
+8. **Pendências políticas** — situações em aberto que precisam de acompanhamento: demandas não atendidas, compromissos assumidos, conflitos políticos locais, follow-ups com líderes. Cada pendência tem título, descrição, tipo, prioridade (baixa / média / alta / urgente), status (aberta / em tratativa / resolvida), responsável e prazo. Visível para o deputado como um alerta de atenção antes da visita.
+
+---
+
+## Fluxo de importação de contatos (liderança)
+
+1. Liderança acessa a tela "Meus Contatos"
+2. Faz upload de arquivo `.vcf` exportado do celular
+3. O app faz parse do arquivo e exibe a lista de contatos encontrados
+4. Liderança **seleciona manualmente** quais deseja enviar (checkbox por contato)
+5. Confirma o envio — cada contato é salvo com `status = 'pendente'` e `consentiu = true`
+6. Assessoria recebe notificação na fila de aprovação e aprova ou rejeita cada um
+7. Apenas contatos com `status = 'aprovado'` aparecem no dossiê do deputado
+
+---
+
+## Interface — Visão do Deputado (PWA)
+
+**Tela inicial:**
+- Saudação com nome e data
+- Card destacado com o próximo município agendado
+- Grid de municípios com pills mostrando contagem de contatos, emendas e pendências abertas
+- Barra de busca por nome de município
+
+**Tela do município (dossiê):**
+- Abas: Contatos · Políticos · Emendas · Obras · Agenda · Notas · Pendências
+- Aba **Pendências** exibe badge vermelho com contagem de itens urgentes/em aberto
+- Layout mobile-first, scroll natural por aba
+- Toda a interface é somente leitura para este perfil
+
+---
+
+## Interface — Visão da Liderança
+
+- Tela de boas-vindas com nome e município vinculado
+- Resumo: quantos contatos foram enviados e aprovados
+- Botão/área de upload de arquivo .vcf com prévia de seleção
+- Lista de contatos já enviados com status visível
+- Sem acesso a outros módulos do município
+
+---
+
+## Interface — Visão da Assessoria (Admin)
+
+**Dashboard:**
+- Totais: municípios, contatos aprovados, emendas, pendências abertas
+- Lista de municípios com indicadores de status (novo, contatos pendentes, pendência urgente)
+
+**Por município:**
+- Formulário completo de edição de todos os módulos
+- Gerenciamento de políticos, emendas, obras, eventos, notas, fotos e pendências
+- Fila de contatos aguardando aprovação (enviados pelas lideranças)
+- Upload de mídia via Supabase Storage
+
+**Gerenciamento de usuários:**
+- Criar/editar lideranças e vincular ao município correto
+- Visualizar atividade recente por liderança
+
+---
+
+## Estética e design
+
+- Tema escuro predominante (`#0f1117` base)
+- Tipografia: `DM Serif Display` para títulos, `DM Sans` para corpo
+- Cor de acesso dourada/âmbar (`#c9a84c`) como acento institucional
+- Verde (`#3db87a`) para status positivo, vermelho (`#e05c5c`) para alertas
+- Cards com bordas sutis, sem sombras pesadas
+- Animações de entrada suaves (fade + translateY)
+- PWA: ícone instalável, splash screen, cor de tema `#0f1117`
+- Mobile-first — máximo 420px de largura útil nas telas do deputado e liderança
+- Painel da assessoria pode ter layout mais largo (desktop)
+
+---
+
+## Requisitos técnicos adicionais
+
+- Autenticação via Supabase Auth (e-mail + senha)
+- Redirecionamento automático pós-login para a view correta conforme `role` do usuário
+- Parser de `.vcf` no frontend (biblioteca `vcf` ou parse manual) — sem upload para servidor antes da seleção
+- Supabase Storage para upload de fotos e documentos
+- Variáveis de ambiente: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Sem uso de bibliotecas de componentes prontos (MUI, Chakra, shadcn) — CSS puro com Tailwind
+- Código em português (variáveis, comentários e interface)
+
+---
+
+## Entregáveis esperados
+
+1. Estrutura completa do projeto Next.js com App Router
+2. Migrations SQL do Supabase com RLS configurado
+3. Todas as telas funcionais conforme descrito acima
+4. Fluxo de importação de `.vcf` funcionando
+5. PWA configurado e instalável
+6. README com instruções de deploy na Vercel e configuração do Supabase

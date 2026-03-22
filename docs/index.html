@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossiê Municipal — Mandato</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c26;
+    --surface2: #1e2334;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8e6df;
+    --muted: #7a7d8c;
+    --accent: #c9a84c;
+    --accent2: #e8c97a;
+    --green: #3db87a;
+    --red: #e05c5c;
+    --blue: #4e8fd4;
+    --purple: #8b7fd4;
+    --radius: 10px;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── ROLE SWITCHER ─────────────────────────────── */
+  .role-bar {
+    background: #0a0d13;
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 44px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .role-bar span {
+    font-size: 11px;
+    color: var(--muted);
+    margin-right: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .role-btn {
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .role-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .role-btn.active { background: var(--accent); border-color: var(--accent); color: #0f1117; }
+
+  /* ─── VIEWS ─────────────────────────────────────── */
+  .view { display: none; animation: fadeIn 0.3s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ════════════════════════════════════════════════
+     DEPUTADO — PWA VIEW
+  ════════════════════════════════════════════════ */
+  .dep-header {
+    background: linear-gradient(160deg, #141828 0%, #0f1117 60%);
+    padding: 2rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dep-greeting {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .dep-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .dep-title em { color: var(--accent); font-style: italic; }
+
+  .search-bar {
+    margin-top: 1.2rem;
+    position: relative;
+  }
+  .search-bar input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 10px 16px 10px 40px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-bar input:focus { border-color: var(--accent); }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 15px;
+    pointer-events: none;
+  }
+
+  .city-grid {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .city-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .city-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .city-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .city-card:hover::before { opacity: 1; }
+  .city-card.featured {
+    grid-column: span 2;
+    background: var(--surface2);
+    border-color: rgba(201,168,76,0.3);
+  }
+  .city-card.featured::before { opacity: 1; }
+  .city-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .city-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .city-card.featured .city-name { font-size: 22px; }
+  .city-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .city-pill {
+    font-size: 11px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.05);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  /* ─── CITY DETAIL ────────────────────────────── */
+  .city-detail { display: none; }
+  .city-detail.active { display: block; animation: fadeIn 0.25s ease; }
+  .dep-content { display: block; }
+  .dep-content.hidden { display: none; }
+
+  .detail-header {
+    background: linear-gradient(160deg, #141828 0%, #0f1117 70%);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+  .detail-city-name {
+    font-family: var(--font-display);
+    font-size: 30px;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .detail-city-name span { color: var(--accent); }
+  .detail-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: var(--font-body);
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-content { display: none; padding: 1.5rem; }
+  .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+
+  /* Contatos */
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .contact-item:last-child { border-bottom: none; }
+  .avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    font-family: var(--font-body);
+  }
+  .avatar.green { background: rgba(61,184,122,0.15); color: var(--green); }
+  .avatar.blue { background: rgba(78,143,212,0.15); color: var(--blue); }
+  .avatar.purple { background: rgba(139,127,212,0.15); color: var(--purple); }
+  .avatar.amber { background: rgba(201,168,76,0.15); color: var(--accent); }
+  .contact-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .contact-role { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .contact-tag {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .tag-key { background: rgba(201,168,76,0.15); color: var(--accent); }
+  .tag-vol { background: rgba(61,184,122,0.15); color: var(--green); }
+  .tag-pol { background: rgba(78,143,212,0.15); color: var(--blue); }
+
+  /* Políticos */
+  .pol-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .pol-role {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .pol-name { font-size: 16px; font-weight: 600; color: var(--text); }
+  .pol-party { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .pol-tel { font-size: 12px; color: var(--blue); margin-top: 6px; }
+
+  /* Emendas */
+  .emenda-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .emenda-item.pendente { border-left-color: var(--accent); }
+  .emenda-item.bloqueada { border-left-color: var(--red); }
+  .emenda-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .emenda-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .emenda-valor { font-size: 16px; font-weight: 600; color: var(--accent); font-family: var(--font-display); }
+  .emenda-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .status-ok { background: rgba(61,184,122,0.15); color: var(--green); }
+  .status-pend { background: rgba(201,168,76,0.15); color: var(--accent); }
+  .status-bloq { background: rgba(224,92,92,0.15); color: var(--red); }
+
+  /* Notas */
+  .nota-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .nota-date { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .nota-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .nota-author { font-size: 12px; color: var(--accent); margin-top: 8px; }
+
+  /* ════════════════════════════════════════════════
+     LIDERANÇA VIEW
+  ════════════════════════════════════════════════ */
+  .lider-header {
+    background: linear-gradient(160deg, #0d1e18 0%, #0f1117 60%);
+    padding: 2rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .lider-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(61,184,122,0.12);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .lider-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .lider-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .lider-body { padding: 1.5rem; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .import-box {
+    background: var(--surface);
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .import-box:hover { border-color: var(--accent); background: rgba(201,168,76,0.04); }
+  .import-icon { font-size: 28px; margin-bottom: 10px; }
+  .import-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .import-desc { font-size: 12px; color: var(--muted); }
+
+  /* Preview de contatos importados */
+  .import-preview {
+    background: var(--surface);
+    border: 1px solid rgba(61,184,122,0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .preview-title { font-size: 13px; font-weight: 500; color: var(--green); }
+  .preview-count { font-size: 12px; color: var(--muted); }
+
+  .preview-contact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .preview-contact:last-child { border-bottom: none; }
+  .check-box {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--border2);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .check-box.checked { background: var(--green); border-color: var(--green); color: #0f1117; }
+  .preview-name { font-size: 13px; color: var(--text); flex: 1; }
+  .preview-phone { font-size: 12px; color: var(--muted); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #0f1117;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 11px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Contatos já enviados */
+  .sent-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.5rem;
+  }
+  .sent-num { font-family: var(--font-display); font-size: 36px; color: var(--accent); line-height: 1; }
+  .sent-label { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .sent-label strong { display: block; font-size: 14px; color: var(--text); font-weight: 500; }
+
+  /* ════════════════════════════════════════════════
+     ASSESSORIA VIEW
+  ════════════════════════════════════════════════ */
+  .admin-header {
+    background: linear-gradient(160deg, #160f1e 0%, #0f1117 60%);
+    padding: 2rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .admin-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    background: rgba(139,127,212,0.12);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .admin-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); }
+
+  .admin-body { padding: 1.5rem; }
+
+  .city-admin-list { margin-bottom: 1.5rem; }
+  .city-admin-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .city-admin-item:hover { border-color: var(--border2); }
+  .city-admin-item.selected { border-color: rgba(139,127,212,0.4); background: rgba(139,127,212,0.05); }
+  .city-admin-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-ok { background: var(--green); }
+  .dot-warn { background: var(--accent); }
+  .dot-new { background: var(--blue); }
+  .city-admin-name { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+  .city-admin-meta { font-size: 12px; color: var(--muted); }
+  .city-admin-arrow { color: var(--muted); font-size: 16px; }
+
+  /* Painel de edição */
+  .edit-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .edit-panel-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 1rem;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .field-group { margin-bottom: 14px; }
+  .field-label { font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+  .field-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: var(--purple); }
+  textarea.field-input { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .tag-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .tag-opt {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tag-opt:hover { border-color: var(--purple); color: var(--purple); }
+  .tag-opt.sel { background: rgba(139,127,212,0.2); border-color: var(--purple); color: var(--purple); }
+
+  .new-contact-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .new-contact-row:last-child { border-bottom: none; }
+  .nc-name { font-size: 13px; color: var(--text); flex: 1; }
+  .nc-origin { font-size: 11px; color: var(--muted); }
+  .nc-approve {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--green);
+    color: var(--green);
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s;
+  }
+  .nc-approve:hover { background: rgba(61,184,122,0.15); }
+  .nc-approved { background: rgba(61,184,122,0.15); border-color: transparent; cursor: default; }
+
+  /* Bottom nav (mobile feel) */
+  .bottom-nav {
+    position: sticky;
+    bottom: 0;
+    background: #0a0d13;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 4px;
+    z-index: 50;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 16px;
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-icon { font-size: 18px; }
+
+  /* Responsive max-width for desktop viewing */
+  .app-container {
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--bg);
+  }
+
+  @media (min-width: 480px) {
+    .app-container {
+      box-shadow: 0 0 60px rgba(0,0,0,0.5);
+    }
+    body { background: #07090f; display: flex; justify-content: center; padding: 2rem 0; }
+  }
+
+  /* Scrollable main */
+  .app-main { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+
+  /* Tooltip style notification */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--green);
+    color: #0f1117;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+</style>
+</head>
+<body>
+<div class="app-container">
+
+  <!-- Role switcher -->
+  <div class="role-bar">
+    <span>Perfil:</span>
+    <button class="role-btn active" onclick="setRole('deputado')">Deputado</button>
+    <button class="role-btn" onclick="setRole('lideranca')">Liderança</button>
+    <button class="role-btn" onclick="setRole('assessoria')">Assessoria</button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       DEPUTADO VIEW
+  ══════════════════════════════════════ -->
+  <div class="view active app-main" id="view-deputado">
+
+    <!-- Lista de cidades -->
+    <div id="dep-content" class="dep-content">
+      <div class="dep-header">
+        <p class="dep-greeting">Bom dia, Deputado</p>
+        <h1 class="dep-title">Sua agenda<br>na <em>Bahia</em></h1>
+        <div class="search-bar">
+          <span class="search-icon">⌕</span>
+          <input type="text" placeholder="Buscar município..." id="city-search" oninput="filterCities()">
+        </div>
+      </div>
+
+      <div class="city-grid" id="city-grid">
+        <div class="city-card featured" onclick="openCity('Salvador')">
+          <div class="city-badge">📍 Próxima visita · 24 mar</div>
+          <div class="city-name">Salvador</div>
+          <div class="city-meta">
+            <span class="city-pill">47 contatos</span>
+            <span class="city-pill">3 emendas</span>
+            <span class="city-pill">2 eventos</span>
+          </div>
+        </div>
+        <div class="city-card" onclick="openCity('Feira de Santana')">
+          <div class="city-name">Feira de Santana</div>
+          <div class="city-meta">
+            <span class="city-pill">31 contatos</span>
+            <span class="city-pill">2 emendas</span>
+          </div>
+        </div>
+        <div class="city-card" onclick="openCity('Vitória da Conquista')">
+          <div class="city-name">Vitória da Conquista</div>
+          <div class="city-meta">
+            <span class="city-pill">18 contatos</span>
+            <span class="city-pill">1 emenda</span>
+          </div>
+        </div>
+        <div class="city-card" onclick="openCity('Ilhéus')">
+          <div class="city-name">Ilhéus</div>
+          <div class="city-meta">
+            <span class="city-pill">22 contatos</span>
+            <span class="city-pill">1 obra</span>
+          </div>
+        </div>
+        <div class="city-card" onclick="openCity('Camaçari')">
+          <div class="city-name">Camaçari</div>
+          <div class="city-meta">
+            <span class="city-pill">14 contatos</span>
+          </div>
+        </div>
+        <div class="city-card" onclick="openCity('Juazeiro')">
+          <div class="city-name">Juazeiro</div>
+          <div class="city-meta">
+            <span class="city-pill">9 contatos</span>
+            <span class="city-pill">1 emenda</span>
+          </div>
+        </div>
+        <div class="city-card" onclick="openCity('Barreiras')">
+          <div class="city-name">Barreiras</div>
+          <div class="city-meta">
+            <span class="city-pill">12 contatos</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalhe da cidade -->
+    <div id="city-detail" class="city-detail">
+      <div class="detail-header">
+        <button class="back-btn" onclick="closeCity()">← Voltar</button>
+        <div class="detail-city-name" id="detail-city-title">Salvador <span>·</span> BA</div>
+        <div class="detail-sub">Dossiê atualizado em 20 mar 2026</div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="openTab(this,'tab-contatos')">Contatos</button>
+        <button class="tab" onclick="openTab(this,'tab-politicos')">Políticos</button>
+        <button class="tab" onclick="openTab(this,'tab-emendas')">Emendas</button>
+        <button class="tab" onclick="openTab(this,'tab-notas')">Notas</button>
+      </div>
+
+      <!-- Contatos -->
+      <div class="tab-content active" id="tab-contatos">
+        <div class="contact-item">
+          <div class="avatar green">MR</div>
+          <div>
+            <div class="contact-name">Marcos Ribeiro</div>
+            <div class="contact-role">Liderança comunitária · Liberdade</div>
+          </div>
+          <span class="contact-tag tag-key">Chave</span>
+        </div>
+        <div class="contact-item">
+          <div class="avatar blue">CL</div>
+          <div>
+            <div class="contact-name">Claudia Lima</div>
+            <div class="contact-role">Presidente de bairro · Cajazeiras</div>
+          </div>
+          <span class="contact-tag tag-vol">Voluntária</span>
+        </div>
+        <div class="contact-item">
+          <div class="avatar amber">JS</div>
+          <div>
+            <div class="contact-name">João da Silva</div>
+            <div class="contact-role">Coordenador regional</div>
+          </div>
+          <span class="contact-tag tag-key">Chave</span>
+        </div>
+        <div class="contact-item">
+          <div class="avatar purple">AT</div>
+          <div>
+            <div class="contact-name">Ana Torres</div>
+            <div class="contact-role">Liderança · Boca do Rio</div>
+          </div>
+          <span class="contact-tag tag-vol">Voluntária</span>
+        </div>
+        <div class="contact-item">
+          <div class="avatar green">PF</div>
+          <div>
+            <div class="contact-name">Pedro Fontes</div>
+            <div class="contact-role">Associação de moradores · Itapuã</div>
+          </div>
+          <span class="contact-tag tag-pol">Político</span>
+        </div>
+      </div>
+
+      <!-- Políticos -->
+      <div class="tab-content" id="tab-politicos">
+        <div class="pol-card">
+          <div class="pol-role">Prefeito</div>
+          <div class="pol-name">Manoel Pereira</div>
+          <div class="pol-party">PT</div>
+          <div class="pol-tel">📞 (71) 3202-0000</div>
+        </div>
+        <div class="pol-card">
+          <div class="pol-role">Vice-prefeita</div>
+          <div class="pol-name">Ana Paula</div>
+          <div class="pol-party">PT</div>
+          <div class="pol-tel">📞 (71) 3202-0001</div>
+        </div>
+        <div class="divider"></div>
+        <p class="section-label">Vereadores aliados</p>
+        <div class="pol-card">
+          <div class="pol-role">Vereador</div>
+          <div class="pol-name">Carlos Muniz</div>
+          <div class="pol-party">PT · Líder da bancada aliada</div>
+          <div class="pol-tel">📞 (71) 9 9874-3210</div>
+        </div>
+        <div class="pol-card">
+          <div class="pol-role">Vereadora</div>
+          <div class="pol-name">Fernanda Sousa</div>
+          <div class="pol-party">PT</div>
+          <div class="pol-tel">📞 (71) 9 9123-4567</div>
+        </div>
+      </div>
+
+      <!-- Emendas -->
+      <div class="tab-content" id="tab-emendas">
+        <div class="emenda-item">
+          <div class="emenda-title">Reforma da UBS Cajazeiras X</div>
+          <div class="emenda-meta">
+            <span class="emenda-valor">R$ 850.000</span>
+            <span class="emenda-status status-ok">✓ Empenhada</span>
+          </div>
+        </div>
+        <div class="emenda-item pendente">
+          <div class="emenda-title">Pavimentação Rua das Pitangueiras</div>
+          <div class="emenda-meta">
+            <span class="emenda-valor">R$ 320.000</span>
+            <span class="emenda-status status-pend">⏳ Aguardando</span>
+          </div>
+        </div>
+        <div class="emenda-item">
+          <div class="emenda-title">Equipamentos para escola municipal</div>
+          <div class="emenda-meta">
+            <span class="emenda-valor">R$ 180.000</span>
+            <span class="emenda-status status-ok">✓ Executada</span>
+          </div>
+        </div>
+        <div class="emenda-item bloqueada">
+          <div class="emenda-title">Creche comunitária Liberdade</div>
+          <div class="emenda-meta">
+            <span class="emenda-valor">R$ 600.000</span>
+            <span class="emenda-status status-bloq">⚠ Bloqueada</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notas -->
+      <div class="tab-content" id="tab-notas">
+        <div class="nota-card">
+          <div class="nota-date">20 mar 2026 · 14:32</div>
+          <div class="nota-text">Reunião com liderança do Subúrbio Ferroviário confirmada às 10h. Levar material sobre a emenda da UBS. Marcos Ribeiro estará presente e já articulou com os demais líderes do bairro.</div>
+          <div class="nota-author">Assessora Juliana Melo</div>
+        </div>
+        <div class="nota-card">
+          <div class="nota-date">18 mar 2026 · 09:15</div>
+          <div class="nota-text">A emenda da creche foi bloqueada por pendência no SIAFI. Aguardar regularização da prefeitura. Prefeito Manoel Pereira está ciente e deu comprometimento de resolução até 30/03.</div>
+          <div class="nota-author">Assessor Pedro Alves</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item active" onclick="depNav(this,'inicio')">
+        <span class="nav-icon">⌂</span>Início
+      </button>
+      <button class="nav-item" onclick="depNav(this,'agenda')">
+        <span class="nav-icon">◷</span>Agenda
+      </button>
+      <button class="nav-item" onclick="depNav(this,'busca')">
+        <span class="nav-icon">⌕</span>Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       LIDERANÇA VIEW
+  ══════════════════════════════════════ -->
+  <div class="view app-main" id="view-lideranca">
+    <div class="lider-header">
+      <div class="lider-badge">Liderança · Feira de Santana</div>
+      <h2 class="lider-title">Seus contatos<br>para o mandato</h2>
+      <p class="lider-sub">Olá, José Aragão — 31 contatos enviados</p>
+    </div>
+    <div class="lider-body">
+
+      <div class="sent-summary">
+        <div class="sent-num">31</div>
+        <div class="sent-label">
+          <strong>Contatos aprovados</strong>
+          Última atualização: 15 mar 2026
+        </div>
+      </div>
+
+      <p class="section-label">Adicionar novos contatos</p>
+
+      <div class="import-box" onclick="showImportPreview()">
+        <div class="import-icon">📱</div>
+        <div class="import-title">Importar arquivo .vcf</div>
+        <div class="import-desc">Exporte seus contatos do celular e faça upload aqui.<br>Você escolherá quais enviar.</div>
+      </div>
+
+      <!-- Preview de importação (oculto inicialmente) -->
+      <div class="import-preview" id="import-preview" style="display:none">
+        <div class="preview-header">
+          <span class="preview-title">✓ 5 contatos encontrados</span>
+          <span class="preview-count">Selecione quais enviar</span>
+        </div>
+        <div class="preview-contact">
+          <div class="check-box checked" onclick="toggleCheck(this)">✓</div>
+          <div class="preview-name">Antônio Souza</div>
+          <div class="preview-phone">(75) 9 8823-1100</div>
+        </div>
+        <div class="preview-contact">
+          <div class="check-box checked" onclick="toggleCheck(this)">✓</div>
+          <div class="preview-name">Beatriz Oliveira</div>
+          <div class="preview-phone">(75) 9 9001-4455</div>
+        </div>
+        <div class="preview-contact">
+          <div class="check-box" onclick="toggleCheck(this)"></div>
+          <div class="preview-name">Carlos Neto</div>
+          <div class="preview-phone">(75) 9 7712-0034</div>
+        </div>
+        <div class="preview-contact">
+          <div class="check-box checked" onclick="toggleCheck(this)">✓</div>
+          <div class="preview-name">Daniela Cruz</div>
+          <div class="preview-phone">(75) 9 9830-2211</div>
+        </div>
+        <div class="preview-contact">
+          <div class="check-box checked" onclick="toggleCheck(this)">✓</div>
+          <div class="preview-name">Eduardo Prado</div>
+          <div class="preview-phone">(75) 9 9102-5566</div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn-primary" onclick="confirmImport()">Confirmar e enviar 4 contatos</button>
+          <button class="btn-secondary" onclick="cancelImport()">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="section-label">Contatos já enviados</p>
+      <div class="contact-item">
+        <div class="avatar green">MR</div>
+        <div>
+          <div class="contact-name">Marcos Ribeiro</div>
+          <div class="contact-role">Liderança comunitária</div>
+        </div>
+        <span class="contact-tag tag-key">Aprovado</span>
+      </div>
+      <div class="contact-item">
+        <div class="avatar blue">CL</div>
+        <div>
+          <div class="contact-name">Claudia Lima</div>
+          <div class="contact-role">Presidente de bairro</div>
+        </div>
+        <span class="contact-tag tag-key">Aprovado</span>
+      </div>
+      <div class="contact-item">
+        <div class="avatar purple">FS</div>
+        <div>
+          <div class="contact-name">Felipe Santos</div>
+          <div class="contact-role">Coordenador</div>
+        </div>
+        <span class="contact-tag tag-vol">Pendente</span>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item active">
+        <span class="nav-icon">◈</span>Contatos
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">◷</span>Histórico
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ASSESSORIA VIEW
+  ══════════════════════════════════════ -->
+  <div class="view app-main" id="view-assessoria">
+    <div class="admin-header">
+      <div>
+        <div class="admin-badge">Assessoria · Admin</div>
+        <h2 class="admin-title">Painel de<br>gestão</h2>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">417</div>
+        <div class="stat-label">Contatos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">63</div>
+        <div class="stat-label">Municípios</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">28</div>
+        <div class="stat-label">Emendas</div>
+      </div>
+    </div>
+
+    <div class="admin-body">
+      <p class="section-label">Municípios</p>
+      <div class="city-admin-list">
+        <div class="city-admin-item selected" onclick="selectAdminCity(this, 'Salvador')">
+          <div class="city-admin-dot dot-ok"></div>
+          <div class="city-admin-name">Salvador</div>
+          <div class="city-admin-meta">47 contatos</div>
+          <span class="city-admin-arrow">›</span>
+        </div>
+        <div class="city-admin-item" onclick="selectAdminCity(this, 'Feira de Santana')">
+          <div class="city-admin-dot dot-warn"></div>
+          <div class="city-admin-name">Feira de Santana</div>
+          <div class="city-admin-meta">3 novos contatos</div>
+          <span class="city-admin-arrow">›</span>
+        </div>
+        <div class="city-admin-item" onclick="selectAdminCity(this, 'Vitória da Conquista')">
+          <div class="city-admin-dot dot-ok"></div>
+          <div class="city-admin-name">Vitória da Conquista</div>
+          <div class="city-admin-meta">18 contatos</div>
+          <span class="city-admin-arrow">›</span>
+        </div>
+        <div class="city-admin-item" onclick="selectAdminCity(this, 'Ilhéus')">
+          <div class="city-admin-dot dot-new"></div>
+          <div class="city-admin-name">Ilhéus</div>
+          <div class="city-admin-meta">Novo cadastro</div>
+          <span class="city-admin-arrow">›</span>
+        </div>
+      </div>
+
+      <!-- Painel de edição da cidade selecionada -->
+      <div class="edit-panel" id="admin-edit-panel">
+        <div class="edit-panel-title" id="admin-edit-title">Salvador — editar dossiê</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Prefeito</div>
+            <input class="field-input" type="text" value="Bruno Reis">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Partido</div>
+            <input class="field-input" type="text" value="Partido dos Trabalhadores">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Nota interna</div>
+          <textarea class="field-input">Reunião com liderança do Subúrbio Ferroviário confirmada às 10h. Levar material sobre a emenda da UBS.</textarea>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Tags da cidade</div>
+          <div class="tag-select">
+            <span class="tag-opt sel" onclick="this.classList.toggle('sel')">Prioritária</span>
+            <span class="tag-opt" onclick="this.classList.toggle('sel')">Visita agendada</span>
+            <span class="tag-opt sel" onclick="this.classList.toggle('sel')">Emenda ativa</span>
+            <span class="tag-opt" onclick="this.classList.toggle('sel')">Conflito político</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="showToast('Dossiê salvo com sucesso!')">Salvar alterações</button>
+      </div>
+
+      <!-- Contatos aguardando aprovação -->
+      <p class="section-label">Contatos aguardando aprovação</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:1.5rem">
+        <div class="new-contact-row">
+          <div>
+            <div class="nc-name">Felipe Santos</div>
+            <div class="nc-origin">Via José Aragão · Feira de Santana</div>
+          </div>
+          <button class="nc-approve" onclick="approveContact(this)">Aprovar</button>
+        </div>
+        <div class="new-contact-row">
+          <div>
+            <div class="nc-name">Regina Costa</div>
+            <div class="nc-origin">Via Maria Lúcia · Ilhéus</div>
+          </div>
+          <button class="nc-approve" onclick="approveContact(this)">Aprovar</button>
+        </div>
+        <div class="new-contact-row">
+          <div>
+            <div class="nc-name">Tiago Moraes</div>
+            <div class="nc-origin">Via José Aragão · Feira de Santana</div>
+          </div>
+          <button class="nc-approve" onclick="approveContact(this)">Aprovar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item active">
+        <span class="nav-icon">◈</span>Painel
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">⊞</span>Cidades
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">⊕</span>Novo
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+  function setRole(role) {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + role).classList.add('active');
+  }
+
+  function openCity(name) {
+    document.getElementById('dep-content').classList.add('hidden');
+    document.getElementById('city-detail').classList.add('active');
+    document.getElementById('detail-city-title').innerHTML = name + ' <span>·</span> BA';
+    // Reset tabs
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('tab-contatos').classList.add('active');
+    document.querySelector('#view-deputado .app-main, #view-deputado').scrollTop = 0;
+  }
+
+  function closeCity() {
+    document.getElementById('dep-content').classList.remove('hidden');
+    document.getElementById('city-detail').classList.remove('active');
+  }
+
+  function openTab(btn, tabId) {
+    btn.closest('.view, .city-detail').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.closest('.view, .city-detail').querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  function depNav(btn, section) {
+    document.querySelectorAll('#view-deputado .nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (section === 'inicio') closeCity();
+  }
+
+  function filterCities() {
+    const q = document.getElementById('city-search').value.toLowerCase();
+    document.querySelectorAll('.city-card').forEach(c => {
+      c.style.display = c.querySelector('.city-name').textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function showImportPreview() {
+    document.getElementById('import-preview').style.display = 'block';
+    document.querySelector('.import-box').style.display = 'none';
+  }
+
+  function cancelImport() {
+    document.getElementById('import-preview').style.display = 'none';
+    document.querySelector('.import-box').style.display = 'block';
+  }
+
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    el.textContent = el.classList.contains('checked') ? '✓' : '';
+    const checked = document.querySelectorAll('#import-preview .check-box.checked').length;
+    document.querySelector('#import-preview .btn-primary').textContent = `Confirmar e enviar ${checked} contato${checked !== 1 ? 's' : ''}`;
+  }
+
+  function confirmImport() {
+    showToast('Contatos enviados para aprovação!');
+    cancelImport();
+  }
+
+  function selectAdminCity(el, name) {
+    document.querySelectorAll('.city-admin-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('admin-edit-title').textContent = name + ' — editar dossiê';
+  }
+
+  function approveContact(btn) {
+    btn.textContent = '✓ Aprovado';
+    btn.classList.add('nc-approved');
+    btn.disabled = true;
+    showToast('Contato aprovado!');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>
