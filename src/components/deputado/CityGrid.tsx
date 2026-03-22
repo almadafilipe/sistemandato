@@ -7,12 +7,12 @@ interface CityGridProps {
 
 export default function CityGrid({ municipios }: CityGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {municipios.map((municipio, index) => (
         <CityCard 
           key={municipio.id}
           municipio={municipio}
-          // Lógica de destaque provisória: destaca o primeiro item
+          // Destaque o primeiro para variar o layout
           isFeatured={index === 0} 
         />
       ))}

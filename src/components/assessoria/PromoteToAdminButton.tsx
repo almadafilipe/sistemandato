@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { promoteToAssessoria } from '@/app/assessoria/actions';
 
 export default function PromoteToAdminButton() {
+  const router = useRouter();
   const [isPending, setIsPending] = useState(false);
 
   const handlePromote = async () => {
@@ -12,7 +14,7 @@ export default function PromoteToAdminButton() {
     try {
       setIsPending(true);
       await promoteToAssessoria();
-      // A página deve revalidar sozinha pelo revalidatePath
+      router.refresh();
     } catch (err) {
       console.error(err);
       alert('Erro ao promover conta.');
@@ -25,9 +27,9 @@ export default function PromoteToAdminButton() {
     <button 
       onClick={handlePromote}
       disabled={isPending}
-      className="mt-6 px-6 py-2 bg-purple text-text font-bold rounded-full border border-purple/50 hover:bg-purple/80 transition-all text-xs tracking-widest uppercase shadow-lg shadow-purple/20"
+      className="mt-6 px-10 py-5 bg-accent text-white font-black rounded-2xl border border-accent/20 hover:bg-accent-hover transition-all text-xs tracking-[0.2em] uppercase shadow-[0_15px_35px_rgba(227,6,19,0.25)] active:scale-95 disabled:opacity-50"
     >
-      {isPending ? 'PROMOVENDO...' : 'VIRAR ADMIN (ASSESSORIA)'}
+      {isPending ? 'PROCESSANDO ACESSO...' : 'REQUERER ACESSO ADMIN'}
     </button>
   );
 }

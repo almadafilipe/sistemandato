@@ -8,7 +8,8 @@ export async function getMunicipios() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('municipios')
-    .select('*')
+    .select('*, contatos!left(count), emendas!left(count)')
+    .eq('contatos.status', 'aprovado') // Filtra contatos aprovados na contagem
     .order('nome', { ascending: true });
 
   if (error) {
@@ -172,4 +173,27 @@ export async function getPerfis() {
     console.error("Erro ao buscar perfis:", error);
   }
   return { data, error };
+}
+
+/**
+ * Funções de Busca Global para as novas páginas do Mandato
+ */
+export async function getTodasEmendas() {
+  const supabase = await createClient();
+  return supabase.from('emendas').select('*, municipios(nome)').order('ano', { ascending: false });
+}
+
+export async function getTodasObras() {
+  const supabase = await createClient();
+  return supabase.from('obras').select('*, municipios(nome)').order('titulo');
+}
+
+export async function getTodosEventos() {
+  const supabase = await createClient();
+  return supabase.from('eventos').select('*, municipios(nome)').order('data_hora', { ascending: false });
+}
+
+export async function getTodosContatos() {
+  const supabase = await createClient();
+  return supabase.from('contatos').select('*, municipios(nome), perfis(nome)').eq('status', 'aprovado').order('created_at', { ascending: false });
 }

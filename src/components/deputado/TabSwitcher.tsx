@@ -68,14 +68,14 @@ export default function TabSwitcher({ data }: TabSwitcherProps) {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative px-4 py-3 text-sm font-medium transition-colors border-b-2
+            className={`relative px-3 py-2 text-sm font-medium transition-colors border-b-2
               ${activeTab === tab.id
                 ? 'text-accent border-accent'
                 : 'text-muted border-transparent hover:text-text'
               }`}
           >
             {tab.label} <span className="text-xs opacity-60 ml-1">{tab.count}</span>
-            {tab.isAlert && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500"></span>}
+            {tab.isAlert && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500"></span>}
           </button>
         ))}
       </div>

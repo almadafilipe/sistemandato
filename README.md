@@ -83,4 +83,16 @@ Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver a 
     - Gestão de Equipe (cadastro de Lideranças).
     - **NOVO:** Painel de administração de dados dinâmico (`/assessoria/municipio/[id]`) com CRUD completo (Server Actions) focado em injetar e editar as 6 entidades vitais do dossiê: Emendas, Obras, Eventos, Notas, Pendências e Políticos.
 - **PWA:** Configuração básica do `next-pwa` com `manifest.json` e headers no layout para tornar o app instalável.
+- **Aprimoramento do Dashboard do Deputado (Busca em Tempo Real):**
+    - Implementada busca instantânea de municípios via Componente de Cliente (`CitySection`).
+    - Exibição dinâmica de estatísticas em tempo real (Contatos Aprovados e Emendas) no `CityCard`, eliminando valores estáticos.
+    - Otimização do carregamento de dados com `getMunicipios` atualizado.
+- **Evolução do CRM Assessoria (Experiência SPA):**
+    - Refatoração do `CrudPanel` para eliminar `window.location.reload()`, utilizando `router.refresh()` e atualizações de estado local para um fluxo contínuo.
+    - Melhoria técnica nas Server Actions para retornar dados criados, garantindo integridade e velocidade na UI.
+    - Polimento visual dos modais e botões de ação (`PromoteToAdminButton`) seguindo o novo padrão "Vibe PT".
+- **Refinamento Visual "UI Pro Max":**
+    - Aplicação rigorosa do tema Beige/PT Red em todos os componentes de detalhes (`EmendasTab`, `ContatosTab`).
+    - **Layout Compacto:** Redução da largura da sidebar para 220px, diminuição de paddings globais (de 48px para 32px) e ajuste de densidade em todas as listas e cards para um visual mais executivo e denso.
+    - Correção de tipagem TypeScript (`any`/`unknown`) em todo o fluxo de dados para maior estabilidade.
 - **Correção de Erros & Migração (Cloudflare):** Resolvido o erro 500 no deploy (timeout/configuração do Supabase) e migrado do Netlify para o Cloudflare Pages visando melhores limites de cota e performance no Edge Runtime.

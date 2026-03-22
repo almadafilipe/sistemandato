@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import CrudPanel, { FieldSchema } from './CrudPanel';
-import { ObraStatus, EmendaStatus, PendenciaPrioridade, PendenciaStatus } from '@/lib/types';
+// Tipos removidos por não serem utilizados no componente
 import { Calendar, FileText, Hammer, Users, AlertTriangle, FileSignature } from 'lucide-react';
 
 interface GestaoMunicipioClientProps {
@@ -111,49 +111,59 @@ export default function GestaoMunicipioClient({ municipioId, initialData }: Gest
   const currentConfig = tabs.find(t => t.id === activeTab);
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 items-start">
-      {/* Sidebar Navigation */}
-      <div className="w-full md:w-64 flex-shrink-0 bg-surface rounded-xl p-3 shadow-sm border border-border">
-        <ul className="space-y-1">
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
-            return (
-              <li key={tab.id}>
-                <button
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all font-medium ${
-                    isActive 
-                      ? 'bg-accent/10 border-l-4 border-accent text-accent' 
-                      : 'text-muted hover:bg-surface2 hover:text-text border-l-4 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-accent' : 'opacity-60'}`} />
-                    {tab.label}
-                  </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-accent text-white' : 'bg-border text-muted'} opacity-80`}>
-                    {tab.data.length}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+    <div className="flex flex-col xl:flex-row gap-12 items-start">
+      {/* Sidebar Navigation - Pro Max */}
+      <div className="w-full xl:w-80 flex-shrink-0 space-y-4">
+        <p className="px-6 text-[10px] font-bold uppercase tracking-[0.3em] text-muted/40">Categorias de Dados</p>
+        <div className="vibe-card p-3! border-white/5 bg-surface/10">
+          <ul className="space-y-2">
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <li key={tab.id}>
+                  <button
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl text-left transition-all duration-300 font-bold group ${
+                      isActive 
+                        ? 'bg-accent text-white shadow-[0_10px_20px_rgba(227,6,19,0.2)] scale-[1.02]' 
+                        : 'text-muted hover:bg-white/5 hover:text-text'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-muted group-hover:text-accent transition-colors'}`} />
+                      <span className="text-sm tracking-wide">{tab.label}</span>
+                    </div>
+                    <span className={`text-[10px] px-2.5 py-1 rounded-lg font-black ${isActive ? 'bg-white/20 text-white' : 'bg-white/5 text-muted'} transition-colors`}>
+                      {tab.data.length}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className="vibe-card p-6! border-accent/10 bg-accent/5">
+            <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">Dica Operacional</p>
+            <p className="text-xs text-muted/60 leading-relaxed font-medium">As alterações feitas aqui são sincronizadas instantaneamente com o portal do Deputado.</p>
+        </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 bg-surface rounded-xl p-6 shadow-sm border border-border min-h-[500px]">
+      {/* Main Content Area - luxo e espaço */}
+      <div className="flex-1 w-full min-h-[700px]">
         {currentConfig && (
-          <CrudPanel 
-            key={currentConfig.id} // Forza reset do componente se a tab mudar
-            tableName={currentConfig.id}
-            municipioId={municipioId}
-            schema={currentConfig.schema}
-            data={currentConfig.data}
-            titleKey={currentConfig.titleKey}
-            subtitleKey={currentConfig.subtitleKey}
-          />
+          <div className="animate-fade-in-up">
+            <CrudPanel 
+              key={currentConfig.id}
+              tableName={currentConfig.id}
+              municipioId={municipioId}
+              schema={currentConfig.schema}
+              data={currentConfig.data}
+              titleKey={currentConfig.titleKey}
+              subtitleKey={currentConfig.subtitleKey}
+            />
+          </div>
         )}
       </div>
     </div>

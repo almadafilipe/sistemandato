@@ -38,7 +38,7 @@ export default function ObrasTab({ data }: ObrasTabProps) {
         const IconName = config.icon;
 
         return (
-          <div key={obra.id} className="bg-surface2 p-4 rounded-xl border border-border hover:border-accent/50 transition-colors shadow-sm relative overflow-hidden group">
+          <div key={obra.id} className="bg-surface2 p-3.5 rounded-xl border border-border hover:border-accent/50 transition-colors shadow-sm relative overflow-hidden group">
             <div className={`absolute top-0 left-0 w-1.5 h-full ${config.bg.replace('/10', '')}`} />
             
             <div className="flex justify-between items-start pl-2">
@@ -54,7 +54,7 @@ export default function ObrasTab({ data }: ObrasTabProps) {
               </span>
             </div>
 
-            <div className="mt-4 pl-2 grid grid-cols-2 gap-2 border-t border-border pt-3">
+            <div className="mt-3 pl-2 grid grid-cols-2 gap-2 border-t border-border pt-2.5">
               <div>
                 <p className="text-xs text-muted uppercase tracking-wider font-semibold">Previsão</p>
                 <p className="text-sm font-medium text-text font-display mt-0.5">{formatDate(obra.previsao_conclusao)}</p>

@@ -37,7 +37,7 @@ export default function EventosTab({ data }: EventosTabProps) {
         const isPast = evento.data_hora ? new Date(evento.data_hora) < new Date() : false;
         
         return (
-          <div key={evento.id} className={`bg-surface2 p-4 rounded-xl border border-border shadow-sm transition-all hover:bg-surface3 ${isPast ? 'opacity-70' : ''}`}>
+          <div key={evento.id} className={`bg-surface2 p-3.5 rounded-xl border border-border shadow-sm transition-all hover:bg-surface3 ${isPast ? 'opacity-70' : ''}`}>
             
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1">
@@ -57,7 +57,7 @@ export default function EventosTab({ data }: EventosTabProps) {
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-border/50 flex flex-wrap gap-y-2 gap-x-4">
+            <div className="mt-3 pt-2.5 border-t border-border/50 flex flex-wrap gap-y-2 gap-x-4">
               <div className="flex items-center text-sm text-text">
                 <Calendar className="w-4 h-4 mr-1.5 text-accent" />
                 <span className="font-medium">{formatDateTime(evento.data_hora)}</span>

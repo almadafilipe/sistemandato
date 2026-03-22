@@ -15,6 +15,8 @@ export interface Municipio {
   regiao?: string | null;
   populacao?: number | null;
   created_at: string; // timestamptz
+  contatos?: { count: number }[]; 
+  emendas?: { count: number }[];
 }
 
 export interface Perfil {

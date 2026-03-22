@@ -4,9 +4,9 @@ export const runtime = 'edge'
 import DeputadoDashboard from "@/components/dashboards/DeputadoDashboard";
 import LiderancaDashboard from '@/components/dashboards/LiderancaDashboard';
 import AssessoriaDashboard from '@/components/dashboards/AssessoriaDashboard';
+import MainLayout from '@/components/layout/MainLayout';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
-  const resolvedSearchParams = await searchParams;
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -31,7 +31,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ [
   const renderDashboard = () => {
     switch (perfil.role) {
       case 'deputado':
-        return <DeputadoDashboard searchParams={resolvedSearchParams} />;
+        return <DeputadoDashboard searchParams={searchParams as Promise<{ ver_municipio?: string }>} />;
       case 'lideranca':
         return <LiderancaDashboard user={user} perfil={perfil} />;
       case 'assessoria':
@@ -42,8 +42,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ [
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-bg text-text p-4">
+    <MainLayout 
+      role={perfil.role} 
+      userName={perfil.nome}
+      activePath="/"
+    >
       {renderDashboard()}
-    </div>
+    </MainLayout>
   )
 }
