@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dossiê Municipal do Mandato
 
-## Getting Started
+## 1. Objetivo do Projeto
 
-First, run the development server:
+Este é um web app construído para um deputado estadual da Bahia e sua equipe, com o objetivo de centralizar informações políticas e de relacionamento por município. O sistema funciona como um dossiê político, permitindo que o deputado acesse dados cruciais (contatos, emendas, pendências, etc.) através de um PWA otimizado para celular, enquanto a equipe de assessoria e as lideranças locais gerenciam e alimentam o sistema.
+
+## 2. Stack de Tecnologia
+
+- **Frontend:** Next.js 14 (App Router) com TypeScript
+- **Backend & Banco de Dados:** Supabase (PostgreSQL + Auth + Storage)
+- **Estilização:** Tailwind CSS
+- **PWA:** `next-pwa` para geração de service worker e manifesto.
+- **Hosting:** Vercel (frontend) + Supabase (backend).
+
+## 3. Setup e Instalação
+
+### Pré-requisitos
+
+- Node.js (versão 20.x ou superior)
+- npm
+- Uma conta no [Supabase](https://supabase.com/)
+
+### 3.1. Configuração do Supabase
+
+1.  **Crie um novo projeto** no seu dashboard do Supabase.
+2.  **Pegue as credenciais:** Vá para `Project Settings` > `API`. Você precisará da **Project URL** e da **anon key**.
+3.  **Execute os scripts SQL:** Vá para o `SQL Editor` no seu projeto Supabase. Copie o conteúdo dos arquivos da pasta `supabase/migrations` deste projeto e execute-os em ordem (pelo timestamp no nome do arquivo). Isso criará todas as tabelas, funções e políticas de segurança necessárias.
+    - `..._initial_schema.sql`
+    - `..._add_perfil_trigger.sql`
+
+### 3.2. Configuração Local
+
+1.  **Clone o repositório:**
+    ```bash
+    git clone <URL_DO_REPOSITORIO>
+    cd sistema_mandato
+    ```
+
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+
+3.  **Crie o arquivo de ambiente:**
+    Crie um arquivo chamado `.env.local` na raiz do projeto e adicione suas credenciais do Supabase:
+    ```
+    NEXT_PUBLIC_SUPABASE_URL="SUA_URL_DO_SUPABASE_AQUI"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="SUA_ANON_KEY_DO_SUPABASE_AQUI"
+    ```
+    Substitua os valores pelos que você copiou do seu projeto Supabase.
+
+### 3.3. Rodando o Projeto
+
+Com tudo configurado, inicie o servidor de desenvolvimento:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver a aplicação.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 4. Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend (Next.js):** O projeto está configurado para deploy fácil na [Vercel](https://vercel.com/). Conecte seu repositório Git à Vercel e ela fará o build e deploy automaticamente. Não se esqueça de adicionar as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`) nas configurações do projeto na Vercel.
+- **Backend (Supabase):** O Supabase já está na nuvem.
 
-## Learn More
+**URL do Deploy:** `[Ainda não implantado]`
 
-To learn more about Next.js, take a look at the following resources:
+## 5. Histórico de Desenvolvimento (Changelog)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Estrutura do Projeto:** Inicializado projeto Next.js 14 com TypeScript e Tailwind CSS.
+- **Banco de Dados:** Scripts SQL criados para todas as tabelas, funções e políticas de segurança (Row Level Security) no Supabase.
+- **Estilização:** Tema escuro, fontes (`DM Sans`, `DM Serif Display`) e paleta de cores do protótipo foram implementados globalmente via `globals.css` e `tailwind.config.ts`.
+- **Autenticação:** Sistema de login, signup e logout implementado com Supabase Auth, incluindo middleware para gerenciamento de sessão e um gatilho no DB para criação automática de perfis.
+- **Visão do Deputado:**
+    - Dashboard principal com grade de municípios.
+    - Visão de detalhes do município com busca de dados e interface de abas completas (`Contatos`, `Políticos`, `Emendas`, `Obras`, `Eventos`, `Notas`, `Pendências`).
+- **Visão da Liderança:**
+    - Dashboard principal com estatísticas de contatos.
+    - Implementação completa do fluxo de importação de contatos via arquivos `.vcf`, incluindo parsing no frontend e envio para o backend.
+- **Visão da Assessoria (CRM Completo):**
+    - Painel central com estatísticas e aprovação de contatos (`AprovalQueue`).
+    - Gestão de Equipe (cadastro de Lideranças).
+    - **NOVO:** Painel de administração de dados dinâmico (`/assessoria/municipio/[id]`) com CRUD completo (Server Actions) focado em injetar e editar as 6 entidades vitais do dossiê: Emendas, Obras, Eventos, Notas, Pendências e Políticos.
+- **PWA:** Configuração básica do `next-pwa` com `manifest.json` e headers no layout para tornar o app instalável.
