@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { logIn, signUp } from "./actions";
+export const runtime = 'edge'
 
 export default async function LoginPage() {
   const searchParams = new URLSearchParams((await headers()).get("x-search-params") || "");

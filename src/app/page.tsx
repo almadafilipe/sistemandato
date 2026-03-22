@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+export const runtime = 'edge'
 import DeputadoDashboard from "@/components/dashboards/DeputadoDashboard";
 import LiderancaDashboard from '@/components/dashboards/LiderancaDashboard';
 import AssessoriaDashboard from '@/components/dashboards/AssessoriaDashboard';

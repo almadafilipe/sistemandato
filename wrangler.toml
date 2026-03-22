@@ -1,0 +1,8 @@
+name = "sistemandato"
+pages_build_output_dir = ".vercel/output"
+compatibility_date = "2024-11-18"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://anctpeaynipahhgvrzaa.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuY3RwZWF5bmlwYWhoZ3ZyemFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDI5OTgsImV4cCI6MjA4OTcxODk5OH0.pUDpAqN5Ji_usmpHLR5Pf_lDB1FrqVP5RJuol-jEfgg"
